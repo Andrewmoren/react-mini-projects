@@ -1,19 +1,60 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./index.scss";
+import { Success } from "./components/Success";
+import { Users } from "./components/Users";
+
+// Тут список пользователей: https://reqres.in/api/users
 
 function App() {
+  const [users, setUsers] = useState([]);
+  const [invites, setInvites] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [success, setSuccsess] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  useEffect(() => {
+    fetch("https://reqres.in/api/users")
+      .then((res) => res.json())
+      .then((json) => {
+        setUsers(json.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const onChangeSearchValue = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const onClickInvite = (id) => {
+    if (invites.includes(id)) {
+      setInvites((prev) => prev.filter((_id) => _id !== id));
+    } else {
+      setInvites((prev) => [...prev, id]);
+    }
+  };
+
+  const onClickSendInvites = () => {
+    setSuccsess(true);
+  };
+
   return (
     <div className="App">
-      <button className="open-modal-btn">✨ Открыть окно</button>
-      {/* <div className="overlay">
-        <div className="modal">
-          <svg height="200" viewBox="0 0 200 200" width="200">
-            <title />
-            <path d="M114,100l49-49a9.9,9.9,0,0,0-14-14L100,86,51,37A9.9,9.9,0,0,0,37,51l49,49L37,149a9.9,9.9,0,0,0,14,14l49-49,49,49a9.9,9.9,0,0,0,14-14Z" />
-          </svg>
-          <img src="https://media2.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif" />
-        </div>
-      </div> */}
+      {success ? (
+        <Success count={invites.length} />
+      ) : (
+        <Users
+          onClickSendInvites={onClickSendInvites}
+          invites={invites}
+          onClickInvite={onClickInvite}
+          items={users}
+          isLoading={isLoading}
+          searchValue={searchValue}
+          onChangeSearchValue={onChangeSearchValue}
+        />
+      )}
     </div>
   );
 }
